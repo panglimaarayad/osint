@@ -243,8 +243,8 @@
         .terminal-overlay {
             position: absolute;
             width: 100%;
-            max-width: 780px;
-            background: rgba(8, 4, 18, 0.85);
+            max-width: 920px;
+            background: rgba(8, 4, 18, 0.88);
             backdrop-filter: blur(25px);
             -webkit-backdrop-filter: blur(25px);
             border: 1px solid rgba(0, 240, 255, 0.22);
@@ -255,7 +255,7 @@
             display: flex;
             flex-direction: column;
             height: calc(100vh - 80px);
-            max-height: 620px;
+            max-height: 720px;
             opacity: 0;
             transform: scale(0.9) translateY(40px);
             pointer-events: none;
@@ -329,7 +329,7 @@
             color: #00ff78;
         }
 
-        /* Code Viewer */
+        /* Code & Preview Viewer Container */
         .terminal-window {
             flex: 1;
             background: #010003;
@@ -338,31 +338,70 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            position: relative;
         }
 
         .window-bar {
-            height: 32px;
-            background: rgba(255, 255, 255, 0.02);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            height: 42px;
+            background: rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
             display: flex;
             align-items: center;
-            padding: 0 12px;
+            padding: 0 16px;
             justify-content: space-between;
         }
 
         .window-dots {
             display: flex;
-            gap: 5px;
+            gap: 6px;
         }
 
         .window-dot {
-            width: 7px;
-            height: 7px;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
         }
         .window-dot.red { background: #ff5f56; }
         .window-dot.yellow { background: #ffbd2e; }
         .window-dot.green { background: #27c93f; }
+
+        /* Navigation Tabs in Terminal Bar */
+        .terminal-tabs {
+            display: flex;
+            gap: 4px;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 3px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: #8fa0dd;
+            font-family: inherit;
+            font-size: 11.5px;
+            font-weight: 600;
+            padding: 6px 14px;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tab-btn:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .tab-btn.active {
+            color: #fff;
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(0, 85, 255, 0.2));
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.1);
+        }
 
         .window-title {
             font-family: 'Fira Code', monospace;
@@ -370,25 +409,52 @@
             color: #555768;
         }
 
+        /* Screen Sections */
+        .content-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
         .code-area {
             flex: 1;
             padding: 15px;
             overflow-y: auto;
+            display: block; /* Default visible */
         }
 
         .code-output {
             font-family: 'Fira Code', monospace;
-            font-size: 12px;
+            font-size: 12.5px;
             line-height: 1.6;
             color: #cbd5e1;
-            white-space: pre-wrap;
-            word-break: break-all;
+            white-space: pre;
+        }
+
+        /* Preview Area */
+        .preview-area {
+            flex: 1;
+            display: none; /* Default hidden */
+            background: #fff;
+            border: none;
+            width: 100%;
+            height: 100%;
+        }
+
+        #liveFrame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: #ffffff;
         }
 
         /* Syntax coloring rules */
         .tag { color: #ff2a74 !important; font-weight: 600; }
         .attr { color: #ffaa00 !important; }
         .val { color: #00ffaa !important; }
+        .comment { color: #6a737d !important; font-style: italic; }
 
         /* Terminal Actions */
         .actions-row {
@@ -571,9 +637,10 @@
 
             <div class="terminal-header">
                 <div class="badges-group">
-                    <div class="terminal-badge creator">Creator: 𝙰𝚗𝚐𝚉𝚉𝙽𝚘𝚝𝙳𝚎𝚟🤡</div>
+                    <div class="terminal-badge creator">Creator: 𝙰𝚗𝚐𝚉𝚉𝙽𝚘𝚝𝙳𝚎𝚟</div>
                     <div class="terminal-badge success" id="statusBadge">Status: Berhasil</div>
                 </div>
+                <div class="window-title" id="previewUrlTitle">extracted_source.html</div>
             </div>
 
             <div class="terminal-window">
@@ -583,11 +650,30 @@
                         <span class="window-dot yellow"></span>
                         <span class="window-dot green"></span>
                     </div>
-                    <div class="window-title">extracted_source.html</div>
+                    
+                    <!-- Tab Switcher -->
+                    <div class="terminal-tabs">
+                        <button class="tab-btn active" id="btnCodeTab" onclick="switchTerminalTab('code')">
+                            📄 Kode Sumber (Beautified)
+                        </button>
+                        <button class="tab-btn" id="btnPreviewTab" onclick="switchTerminalTab('preview')">
+                            🌐 Tampilan Live (Interaktif)
+                        </button>
+                    </div>
+                    
                     <div style="width:30px"></div>
                 </div>
-                <div class="code-area">
-                    <pre class="code-output" id="codeOutput"></pre>
+                
+                <div class="content-container">
+                    <!-- Code View Tab -->
+                    <div class="code-area" id="codeTabContent">
+                        <pre class="code-output" id="codeOutput"></pre>
+                    </div>
+                    
+                    <!-- Web Frame Preview Tab -->
+                    <div class="preview-area" id="previewTabContent">
+                        <iframe id="liveFrame" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+                    </div>
                 </div>
             </div>
 
@@ -640,8 +726,9 @@
         let orion;
         let scorpius;
         let codeParticles = [];
-        
         let isGlobalSucking = false; 
+
+        let rawFetchedHTML = ""; // Menyimpan original HTML string
 
         function resizeCanvas() {
             canvas.width = window.innerWidth;
@@ -680,7 +767,6 @@
             }
 
             updateCoordinates() {
-                // Diposisikan kokoh di area kanan bawah agar seimbang
                 this.x = canvas.width * 0.72;
                 this.y = canvas.height * 0.70;
                 if (canvas.width < 768) {
@@ -1071,14 +1157,12 @@
             const startX = rect.left + rect.width / 2;
             const startY = rect.top + rect.height / 2;
 
-            // Menghitung vektor arah dasar dari kartu ke Black Hole
             const dx = blackHole.x - startX;
             const dy = blackHole.y - startY;
             const baseAngle = Math.atan2(dy, dx);
 
-            // Menambahkan efek sebaran acak lebar (erupsi awal)
             const angle = baseAngle + (Math.random() - 0.5) * 1.5; 
-            const speed = Math.random() * 8 + 4; // Semburan awal yang cepat
+            const speed = Math.random() * 8 + 4; 
 
             codeParticles.push({
                 x: startX + (Math.random() - 0.5) * 50,
@@ -1133,32 +1217,27 @@
                 const dy = blackHole.y - tag.y;
                 const dist = Math.sqrt(dx * dx + dy * dy);
 
-                // Jika sudah sangat dekat dengan singularity / event horizon, hapus partikel
                 if (dist < blackHole.eventHorizon + 8) {
                     codeParticles.splice(idx, 1);
                     return;
                 }
 
-                // GAYA TARIK AKTIF (Meningkat seiring mendekatnya jarak ke Black Hole)
                 const pullForce = 0.24 + (120 / dist); 
                 tag.vx += (dx / dist) * pullForce;
                 tag.vy += (dy / dist) * pullForce;
 
-                // GAYA SPIN/VORTEX (Menciptakan putaran spiral di sekitar Black Hole)
                 const swirlStrength = Math.min(3.5, 220 / dist);
                 const perpX = -dy / dist;
                 const perpY = dx / dist;
                 tag.vx += perpX * swirlStrength;
                 tag.vy += perpY * swirlStrength;
 
-                // Hambatan udara luar angkasa agar gerakan tetap mulus & tidak overshooting tajam
                 tag.vx *= 0.93;
                 tag.vy *= 0.93;
 
                 tag.x += tag.vx;
                 tag.y += tag.vy;
 
-                // Memudarkan partikel secara proporsional saat masuk ke lubang hitam
                 tag.opacity = Math.max(0, Math.min(1, dist / 180));
 
                 ctx.font = `600 ${tag.fontSize}px 'Fira Code'`;
@@ -1180,6 +1259,56 @@
             resizeCanvas();
             runMainLoop();
         };
+
+        /* === HTML Code Beautifier === */
+        function beautifyHTML(html) {
+            let result = '';
+            let indent = '';
+            const tab = '    '; 
+            
+            const cleanHtml = html.replace(/\s*<\s*/g, '<').replace(/\s*>\s*/g, '>');
+            const elements = cleanHtml.split(/>\s*</);
+            
+            elements.forEach((element, index) => {
+                let current = element;
+                if (index > 0) current = '<' + current;
+                if (index < elements.length - 1) current = current + '>';
+                
+                if (current.match(/^<\/\w/)) {
+                    indent = indent.substring(tab.length);
+                }
+                
+                result += indent + current + '\n';
+                
+                if (current.match(/^<\w[^>]*[^\/]>$/) && 
+                    !current.startsWith('<!') && 
+                    !current.match(/^<(img|input|br|hr|link|meta|source|col|embed|area)/i)) {
+                    indent += tab;
+                }
+            });
+            
+            return result.trim();
+        }
+
+        /* === Dynamic Base-URL Tag Injector === */
+        function injectBaseHref(html, originalUrl) {
+            try {
+                const urlObj = new URL(originalUrl);
+                const baseUrl = `${urlObj.origin}${urlObj.pathname}`;
+                const baseTag = `<base href="${baseUrl}">`;
+                
+                if (html.match(/<head>/i)) {
+                    return html.replace(/<head>/i, `<head>\n    ${baseTag}`);
+                } else if (html.match(/<html>/i)) {
+                    return html.replace(/<html>/i, `<html>\n<head>\n    ${baseTag}\n</head>`);
+                } else {
+                    return baseTag + html;
+                }
+            } catch (err) {
+                console.error("Gagal menyuntikkan base-tag:", err);
+                return html;
+            }
+        }
 
         /* === HTML Code Sucker & Terminal Operations === */
         async function generateCode() {
@@ -1241,10 +1370,23 @@
 
                             document.getElementById('inputCard').classList.add('hidden');
                             
-                            const rawCode = data.result.html || '<!-- Berhasil dihisap tapi tidak bermuatan -->';
-                            document.getElementById('codeOutput').innerHTML = applySyntaxColoring(rawCode);
+                            rawFetchedHTML = data.result.html || '<!-- Berhasil dihisap tapi tidak bermuatan -->';
                             
+                            // 1. Beautify dan Tampilkan Code
+                            const beautifulHTML = beautifyHTML(rawFetchedHTML);
+                            document.getElementById('codeOutput').innerHTML = applySyntaxColoring(beautifulHTML);
+                            
+                            // 2. Siapkan Pratinjau Live dengan suntikan Base Href agar identik
+                            const previewHTML = injectBaseHref(rawFetchedHTML, url);
+                            const liveFrame = document.getElementById('liveFrame');
+                            liveFrame.srcdoc = previewHTML;
+
+                            document.getElementById('previewUrlTitle').textContent = `Target: ${url}`;
                             document.getElementById('terminalOverlay').classList.add('visible');
+                            
+                            // Set default tab ke Kode Sumber terlebih dahulu
+                            switchTerminalTab('code');
+
                             showToast('Scorpius dan Orion berhasil dihisap Black Hole!', 'success');
                         }, 1500);
 
@@ -1263,6 +1405,26 @@
             }
         }
 
+        /* === Tab Switcher System === */
+        function switchTerminalTab(tabName) {
+            const codeTab = document.getElementById('codeTabContent');
+            const previewTab = document.getElementById('previewTabContent');
+            const btnCode = document.getElementById('btnCodeTab');
+            const btnPreview = document.getElementById('btnPreviewTab');
+
+            if (tabName === 'code') {
+                codeTab.style.display = 'block';
+                previewTab.style.display = 'none';
+                btnCode.classList.add('active');
+                btnPreview.classList.remove('active');
+            } else if (tabName === 'preview') {
+                codeTab.style.display = 'none';
+                previewTab.style.display = 'block';
+                btnCode.classList.remove('active');
+                btnPreview.classList.add('active');
+            }
+        }
+
         /* === Syntax Highlighter === */
         function applySyntaxColoring(raw) {
             let escaped = raw
@@ -1270,7 +1432,13 @@
                 .replace(/</g, "&lt;")
                 .replace(/>/g, "&gt;");
             
+            // Mewarnai komentar HTML
+            escaped = escaped.replace(/(&lt;!--[\s\S]*?--&gt;)/g, '<span class="comment">$1</span>');
+
+            // Mewarnai Tags, Atribut, dan Nilainya
             return escaped.replace(/&lt;(\/?[a-zA-Z0-9:-]+)([\s\S]*?)&gt;/g, function(match, tagName, tagBody) {
+                if (match.includes('class="comment"')) return match; 
+
                 let highlightedTagName = `&lt;<span class="tag">${tagName}</span>`;
                 let highlightedBody = tagBody.replace(/(\s[a-zA-Z0-9:-]+)=("[^"]*"|'[^']*')/g, function(attrMatch, attrName, attrVal) {
                     return ` <span class="attr">${attrName.trim()}</span>=<span class="val">${attrVal}</span>`;
@@ -1286,6 +1454,7 @@
             
             document.getElementById('urlInput').value = '';
             document.getElementById('loaderText').textContent = 'Menyelaraskan gravitasi Black Hole...';
+            document.getElementById('liveFrame').removeAttribute('srcdoc');
 
             orion.isSucked = false;
             orion.suckProgress = 0;
@@ -1360,4 +1529,4 @@
         }
     </script>
 </body>
-                        </html>
+    </html>
